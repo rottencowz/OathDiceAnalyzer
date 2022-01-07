@@ -44,20 +44,8 @@ type alias Inputs =
     }
 
 
-type Location
-    = Offense
-    | Defense
-
-
-
---  TODO: Action
-
-
 type Msg
-    = IncrementDice Location
-    | DecrementDice Location
-    | IncrementTroops Location
-    | DecrementTroops Location
+    = Modify Action Field Side
     | Roll
 
 
@@ -67,13 +55,13 @@ type Field
 
 
 type Side
-    = Offensive
-    | Defensive
+    = Offense
+    | Defense
 
 
 type Action
-    = Increment Field Side
-    | Decrement Field Side
+    = Increment
+    | Decrement
 
 
 view : Model -> Html Msg
@@ -92,48 +80,37 @@ view model =
 viewInputState : Model -> Html Msg
 viewInputState model =
     div [ class "mb-2" ]
-        [ viewFieldDice model.input.attackingDice Offense
-        , viewFieldDice model.input.defendingDice Defense
-        , viewFieldTroops model.input.attackingTroops Offense
-        , viewFieldTroops model.input.defendingTroops Defense
+        [ table []
+            [ tr []
+                [ th []
+                    [ text "Attacker Dice" ]
+                , th
+                    []
+                    [ text "Attacker Troops" ]
+                , th
+                    []
+                    [ text "Defender Dice" ]
+                , th
+                    []
+                    [ text "Defender Troops" ]
+                ]
+            , tr []
+                [ viewField model.input.attackingDice Dice Offense
+                , viewField model.input.attackingTroops Troops Offense
+                , viewField model.input.defendingDice Dice Defense
+                , viewField model.input.defendingTroops Troops Defense
+                ]
+            ]
         ]
 
 
-
--- TODO: dedupde the view fields
-
-
-viewFieldTroops : Int -> Location -> Html Msg
-viewFieldTroops troops location =
-    let
-        decrementHandler =
-            if troops == 0 then
-                [ onClick (DecrementTroops location) ]
-
-            else
-                []
-    in
-    div []
-        [ button [ onClick (IncrementTroops location) ] [ text "+" ]
-        , text (String.fromInt troops)
-        , button decrementHandler [ text "-" ]
-        ]
-
-
-viewFieldDice : Int -> Location -> Html Msg
-viewFieldDice dice location =
-    let
-        decrementHandler =
-            if dice == 0 then
-                [ onClick (DecrementDice location) ]
-
-            else
-                []
-    in
-    div []
-        [ button [ onClick (IncrementDice location) ] [ text "+" ]
-        , text (String.fromInt dice)
-        , button decrementHandler [ text "-" ]
+viewField : Int -> Field -> Side -> Html Msg
+viewField value field side =
+    td
+        []
+        [ button [ onClick (Modify Increment field side) ] [ text "+" ]
+        , text (String.fromInt value)
+        , button [ onClick (Modify Decrement field side) ] [ text "-" ]
         ]
 
 
@@ -144,55 +121,40 @@ viewRollResult model =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    let
-        modifiedInput =
-            updateInput msg model.input
-    in
     case msg of
+        Modify action field side ->
+            ( { model | input = updateInput model.input ( action, field, side ) }, Cmd.none )
+
         Roll ->
             ( { model | roll = Just (generateNewRoll model.input) }, Cmd.none )
 
-        _ ->
-            ( { model | input = modifiedInput }, Cmd.none )
 
+updateInput : Inputs -> ( Action, Field, Side ) -> Inputs
+updateInput input desc =
+    case desc of
+        ( Increment, Dice, Offense ) ->
+            { input | attackingDice = inc input.attackingDice }
 
-updateInput : Msg -> Inputs -> Inputs
-updateInput msg input =
-    case msg of
-        IncrementDice location ->
-            case location of
-                Offense ->
-                    { input | attackingDice = inc input.attackingDice }
+        ( Decrement, Dice, Offense ) ->
+            { input | attackingDice = dec input.attackingDice }
 
-                Defense ->
-                    { input | defendingDice = inc input.defendingDice }
+        ( Increment, Dice, Defense ) ->
+            { input | defendingDice = inc input.defendingDice }
 
-        DecrementDice location ->
-            case location of
-                Offense ->
-                    { input | attackingDice = dec input.attackingDice }
+        ( Decrement, Dice, Defense ) ->
+            { input | defendingDice = dec input.defendingDice }
 
-                Defense ->
-                    { input | defendingDice = dec input.defendingDice }
+        ( Increment, Troops, Offense ) ->
+            { input | attackingTroops = inc input.attackingTroops }
 
-        IncrementTroops location ->
-            case location of
-                Offense ->
-                    { input | attackingTroops = inc input.attackingTroops }
+        ( Decrement, Troops, Offense ) ->
+            { input | attackingTroops = dec input.attackingTroops }
 
-                Defense ->
-                    { input | defendingTroops = inc input.defendingTroops }
+        ( Increment, Troops, Defense ) ->
+            { input | defendingTroops = inc input.defendingTroops }
 
-        DecrementTroops location ->
-            case location of
-                Offense ->
-                    { input | attackingTroops = dec input.attackingTroops }
-
-                Defense ->
-                    { input | defendingTroops = dec input.defendingTroops }
-
-        _ ->
-            input
+        ( Decrement, Troops, Defense ) ->
+            { input | defendingTroops = dec input.defendingTroops }
 
 
 inc : Int -> Int
