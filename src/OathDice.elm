@@ -34,7 +34,7 @@ type alias Model =
 
 
 type alias RollState =
-    ( List OffenseSides, List DefenseSides )
+    ( Inputs, List OffenseSides, List DefenseSides )
 
 
 type alias Inputs =
@@ -48,7 +48,7 @@ type alias Inputs =
 type Msg
     = Modify Action Field Side
     | Roll
-    | ListsGenerated ( List OffenseSides, List DefenseSides )
+    | ListsGenerated ( Inputs, List OffenseSides, List DefenseSides )
 
 
 type Field
@@ -119,7 +119,7 @@ viewField value field side =
 viewRollResult : Model -> Html Msg
 viewRollResult model =
     case model.roll of
-        Just ( offense, defense ) ->
+        Just ( inputs, offense, defense ) ->
             div []
                 [ div []
                     [ List.length offense
@@ -147,8 +147,8 @@ update msg model =
         Roll ->
             ( model, generateRandomDrops model.input )
 
-        ListsGenerated ( offense, defense ) ->
-            ( { model | roll = Just ( offense, defense ) }, Cmd.none )
+        ListsGenerated ( inputs, offense, defense ) ->
+            ( { model | roll = Just ( inputs, offense, defense ) }, Cmd.none )
 
 
 updateInput : Inputs -> ( Action, Field, Side ) -> Inputs
@@ -237,9 +237,12 @@ generateRandomDrops input =
 
         defense =
             rollDefenseDice input.defendingDice
+
+        generator =
+            Random.map2 (\a b -> ( input, a, b )) offense defense
     in
     Cmd.batch
-        [ Random.generate ListsGenerated (Random.pair offense defense) ]
+        [ Random.generate ListsGenerated generator ]
 
 
 main : Program () Model Msg
