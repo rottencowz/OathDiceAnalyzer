@@ -4,6 +4,7 @@ import Browser exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Random
 
 
 init : () -> ( Model, Cmd msg )
@@ -33,7 +34,7 @@ type alias Model =
 
 
 type alias RollState =
-    {}
+    ( List OffenseSides, List DefenseSides )
 
 
 type alias Inputs =
@@ -47,6 +48,7 @@ type alias Inputs =
 type Msg
     = Modify Action Field Side
     | Roll
+    | ListsGenerated ( List OffenseSides, List DefenseSides )
 
 
 type Field
@@ -116,7 +118,24 @@ viewField value field side =
 
 viewRollResult : Model -> Html Msg
 viewRollResult model =
-    text "roll results"
+    case model.roll of
+        Just ( offense, defense ) ->
+            div []
+                [ div []
+                    [ List.length offense
+                        |> String.fromInt
+                        |> text
+                    ]
+                , div
+                    []
+                    [ List.length defense
+                        |> String.fromInt
+                        |> text
+                    ]
+                ]
+
+        Nothing ->
+            br [] []
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -126,7 +145,10 @@ update msg model =
             ( { model | input = updateInput model.input ( action, field, side ) }, Cmd.none )
 
         Roll ->
-            ( { model | roll = Just (generateNewRoll model.input) }, Cmd.none )
+            ( model, generateRandomDrops model.input )
+
+        ListsGenerated ( offense, defense ) ->
+            ( { model | roll = Just ( offense, defense ) }, Cmd.none )
 
 
 updateInput : Inputs -> ( Action, Field, Side ) -> Inputs
@@ -171,9 +193,53 @@ dec i =
         i - 1
 
 
-generateNewRoll : Inputs -> RollState
-generateNewRoll inputState =
-    Debug.todo "Do this"
+type OffenseSides
+    = Skull
+    | Single
+    | Hollow
+
+
+type DefenseSides
+    = Empty
+    | Shield
+    | TwoShields
+    | Multiply
+
+
+rollOffenseDice : Int -> Random.Generator (List OffenseSides)
+rollOffenseDice count =
+    Random.list count
+        (Random.weighted
+            ( 10, Skull )
+            [ ( 10, Single )
+            , ( 10, Hollow )
+            ]
+        )
+
+
+rollDefenseDice : Int -> Random.Generator (List DefenseSides)
+rollDefenseDice count =
+    Random.list count
+        (Random.weighted
+            ( 10, Empty )
+            [ ( 10, Shield )
+            , ( 10, TwoShields )
+            , ( 10, Multiply )
+            ]
+        )
+
+
+generateRandomDrops : Inputs -> Cmd Msg
+generateRandomDrops input =
+    let
+        offense =
+            rollOffenseDice input.attackingDice
+
+        defense =
+            rollDefenseDice input.defendingDice
+    in
+    Cmd.batch
+        [ Random.generate ListsGenerated (Random.pair offense defense) ]
 
 
 main : Program () Model Msg
