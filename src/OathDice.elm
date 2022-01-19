@@ -1,10 +1,10 @@
-module OathDice exposing (..)
+port module OathDice exposing (..)
 
 import Browser exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Random
+import Random exposing (Generator)
 
 
 init : () -> ( Model, Cmd msg )
@@ -16,9 +16,9 @@ initialModel : Model
 initialModel =
     let
         initialInputs =
-            { attackingDice = 0
+            { attackingDice = 5
             , attackingTroops = 0
-            , defendingDice = 0
+            , defendingDice = 5
             , defendingTroops = 0
             }
     in
@@ -37,6 +37,10 @@ type alias RollState =
     ( Inputs, List OffenseSides, List DefenseSides )
 
 
+
+-- Todo: rename
+
+
 type alias Inputs =
     { attackingDice : Int
     , attackingTroops : Int
@@ -48,7 +52,9 @@ type alias Inputs =
 type Msg
     = Modify Action Field Side
     | Roll
-    | ListsGenerated ( Inputs, List OffenseSides, List DefenseSides )
+    | RollGenerated RollState
+    | GenerateAnalysis
+    | AnalysisGenerated (List RollState)
 
 
 type Field
@@ -76,6 +82,8 @@ view model =
         , button [ onClick Roll ] [ text "Roll" ]
         , br [] []
         , viewRollResult model
+        , button [ onClick GenerateAnalysis ] [ text "Generate Analysis" ]
+        , br [] []
         ]
 
 
@@ -121,21 +129,100 @@ viewRollResult model =
     case model.roll of
         Just ( inputs, offense, defense ) ->
             div []
-                [ div []
-                    [ List.length offense
-                        |> String.fromInt
-                        |> text
-                    ]
-                , div
-                    []
-                    [ List.length defense
-                        |> String.fromInt
-                        |> text
-                    ]
+                [ viewOffenseRoll offense
+                , viewDefenseRoll defense
                 ]
 
         Nothing ->
             br [] []
+
+
+viewDefenseRoll : List DefenseSides -> Html Msg
+viewDefenseRoll defense =
+    let
+        defenseValues =
+            summarizeDefenseRoll defense
+
+        defenseRoll =
+            Tuple.first defenseValues * Basics.max 1 (Tuple.second defenseValues)
+    in
+    div
+        []
+        [ List.length defense
+            |> String.fromInt
+            |> (++) "Dice Count: "
+            |> text
+        , text " - Roll Value: "
+        , defenseRoll
+            |> String.fromInt
+            |> text
+        ]
+
+
+summarizeDefenseRoll : List DefenseSides -> ( Int, Int )
+summarizeDefenseRoll defense =
+    List.foldl
+        (\roll ( shield, multiplies ) ->
+            case roll of
+                Shield ->
+                    ( shield + 1, multiplies )
+
+                TwoShields ->
+                    ( shield + 2, multiplies )
+
+                Multiply ->
+                    ( shield, multiplies + 1 )
+
+                _ ->
+                    ( shield, multiplies )
+        )
+        ( 0, 0 )
+        defense
+
+
+viewOffenseRoll : List OffenseSides -> Html Msg
+viewOffenseRoll offense =
+    let
+        offenseValues =
+            summarizeOffenseResults offense
+
+        damage =
+            Tuple.first offenseValues
+                |> Basics.floor
+
+        selfDamage =
+            Tuple.second offenseValues
+
+        offenseString =
+            String.fromInt damage ++ " damage, with " ++ String.fromInt selfDamage ++ " immediate loses."
+    in
+    div []
+        [ List.length offense
+            |> String.fromInt
+            |> (++) "Dice Count: "
+            |> text
+        , text " - Roll Value: "
+        , offenseString
+            |> text
+        ]
+
+
+summarizeOffenseResults : List OffenseSides -> ( Float, Int )
+summarizeOffenseResults offense =
+    List.foldl
+        (\roll ( value, skulls ) ->
+            case roll of
+                Single ->
+                    ( value + 1, skulls )
+
+                Hollow ->
+                    ( value + 0.5, skulls )
+
+                Skull ->
+                    ( value + 2, skulls + 1 )
+        )
+        ( 0.0, 0 )
+        offense
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -145,10 +232,51 @@ update msg model =
             ( { model | input = updateInput model.input ( action, field, side ) }, Cmd.none )
 
         Roll ->
-            ( model, generateRandomDrops model.input )
+            ( model, generateRandomRoll model.input )
 
-        ListsGenerated ( inputs, offense, defense ) ->
-            ( { model | roll = Just ( inputs, offense, defense ) }, Cmd.none )
+        RollGenerated ( inputs, offense, defense ) ->
+            let
+                newModel =
+                    { model | roll = Just ( inputs, offense, defense ) }
+
+                randomData =
+                    { summarizedOffense = summarizeOffenseResults offense
+                    , summarizedDefense = summarizeDefenseRoll defense
+                    }
+            in
+            ( newModel
+            , passRollToPlotly
+                randomData
+            )
+
+        GenerateAnalysis ->
+            ( model, Random.generate AnalysisGenerated (Random.list 10000 (rollGenerator model.input)) )
+
+        AnalysisGenerated rolls ->
+            ( model
+            , passBatchedRollsToPlotly
+                ( model.input
+                , List.map
+                    (\( inputs, offense, defense ) ->
+                        { summarizedOffense = summarizeOffenseResults offense
+                        , summarizedDefense = summarizeDefenseRoll defense
+                        }
+                    )
+                    rolls
+                )
+            )
+
+
+type alias SummaryResult =
+    { summarizedOffense : ( Float, Int )
+    , summarizedDefense : ( Int, Int )
+    }
+
+
+port passRollToPlotly : SummaryResult -> Cmd msg
+
+
+port passBatchedRollsToPlotly : ( Inputs, List SummaryResult ) -> Cmd msg
 
 
 updateInput : Inputs -> ( Action, Field, Side ) -> Inputs
@@ -229,8 +357,8 @@ rollDefenseDice count =
         )
 
 
-generateRandomDrops : Inputs -> Cmd Msg
-generateRandomDrops input =
+rollGenerator : Inputs -> Generator RollState
+rollGenerator input =
     let
         offense =
             rollOffenseDice input.attackingDice
@@ -241,8 +369,13 @@ generateRandomDrops input =
         generator =
             Random.map2 (\a b -> ( input, a, b )) offense defense
     in
-    Cmd.batch
-        [ Random.generate ListsGenerated generator ]
+    generator
+
+
+generateRandomRoll : Inputs -> Cmd Msg
+generateRandomRoll input =
+    rollGenerator input
+        |> Random.generate RollGenerated
 
 
 main : Program () Model Msg
