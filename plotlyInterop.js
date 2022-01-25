@@ -19,37 +19,51 @@ function createRollDistributionHistogram(message) {
         name: 'Offense',
         autobinx: true,
         marker: {
-            color: "rgba(255, 100, 102, 0.7)",
+            color: "rgba(255, 200, 100, 0.4)",
             line: {
-                color: "rgba(255, 100, 102, 1)",
-                width: 1
+                color: "rgba(255, 100, 100, 1)",
+                width: 2
             }
         },
-        opacity: 0.5,
+        opacity: 1,
         type: "histogram",
         histnorm: 'percent',
         xbins: { start: 0 },
         xaxis: "x",
-        yaxis: "y"
+        yaxis: "y",
+        selectedpoints: [],
+        selected: {
+            marker: {
+                color: "red",
+                opacity: 0.3
+            }
+        }
     };
 
     var trace2 = {
         x: xDefense,
         autobinx: true,
         marker: {
-            color: "rgba(100, 200, 102, 0.7)",
+            color: "rgba(100, 200, 102, 0.3)",
             line: {
-                color: "rgba(100, 200, 102, 1)",
-                width: 1
+                color: "rgba(100, 200, 102, 0.8)",
+                width: 2
             }
         },
         name: "Defense",
-        opacity: 0.75,
+        opacity: 0.8,
         type: "histogram",
         histnorm: 'percent',
         xbins: { start: 0 },
         xaxis: "x",
-        yaxis: "y"
+        yaxis: "y",
+        selectedpoints: [],
+        selected: {
+            marker: {
+                color: "green",
+                opacity: 0.3
+            }
+        }
     };
 
 
