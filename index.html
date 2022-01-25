@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <script src="elm.js"></script>
     <script src="https://cdn.plot.ly/plotly-2.8.3.min.js"></script>
-    <script src="plotlyInterop.js"></script>
+    <script src="javascript/plotlyInterop.js"></script>
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.6/css/bootstrap.css">
 </head>
@@ -28,6 +28,7 @@
     );
 
     app.ports.passRollToPlotly.subscribe(function (message) {
+        console.log(message);
         // todo
         // Individual Roll has been sent to us.
     });

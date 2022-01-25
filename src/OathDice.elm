@@ -1,5 +1,6 @@
 port module OathDice exposing (..)
 
+import Array exposing (..)
 import Browser exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -12,6 +13,7 @@ init _ =
     ( initialModel, Cmd.none )
 
 
+-- TODO : get from local storage
 initialModel : Model
 initialModel =
     let
@@ -24,12 +26,16 @@ initialModel =
     in
     { input = initialInputs
     , roll = Nothing
+    , index = Nothing
+    , backgroundRolls = []
     }
 
 
 type alias Model =
     { input : Inputs
     , roll : Maybe RollState
+    , index : Maybe Int
+    , backgroundRolls : List RollState
     }
 
 
@@ -52,7 +58,7 @@ type alias Inputs =
 type Msg
     = Modify Action Field Side
     | Roll
-    | RollGenerated RollState
+    | RollGenerated Int
     | GenerateAnalysis
     | AnalysisGenerated (List RollState)
 
@@ -148,11 +154,7 @@ viewDefenseRoll defense =
     in
     div
         []
-        [ List.length defense
-            |> String.fromInt
-            |> (++) "Dice Count: "
-            |> text
-        , text " - Roll Value: "
+        [ text "Defense roll value: "
         , defenseRoll
             |> String.fromInt
             |> text
@@ -197,11 +199,7 @@ viewOffenseRoll offense =
             String.fromInt damage ++ " damage, with " ++ String.fromInt selfDamage ++ " immediate loses."
     in
     div []
-        [ List.length offense
-            |> String.fromInt
-            |> (++) "Dice Count: "
-            |> text
-        , text " - Roll Value: "
+        [ text "Offense roll value: "
         , offenseString
             |> text
         ]
@@ -232,28 +230,26 @@ update msg model =
             ( { model | input = updateInput model.input ( action, field, side ) }, Cmd.none )
 
         Roll ->
-            ( model, generateRandomRoll model.input )
+            ( model, Random.generate RollGenerated (Random.int 0 (10000 - 1) ))
 
-        RollGenerated ( inputs, offense, defense ) ->
+        RollGenerated index ->
             let
-                newModel =
-                    { model | roll = Just ( inputs, offense, defense ) }
+                roll = Array.fromList model.backgroundRolls
+                    |> Array.get index
 
-                randomData =
-                    { summarizedOffense = summarizeOffenseResults offense
-                    , summarizedDefense = summarizeDefenseRoll defense
-                    }
+                newModel =
+                    { model | roll = roll }
             in
             ( newModel
             , passRollToPlotly
-                randomData
+                index
             )
 
         GenerateAnalysis ->
             ( model, Random.generate AnalysisGenerated (Random.list 10000 (rollGenerator model.input)) )
 
         AnalysisGenerated rolls ->
-            ( model
+            ( { model | backgroundRolls = rolls }
             , passBatchedRollsToPlotly
                 ( model.input
                 , List.map
@@ -273,7 +269,7 @@ type alias SummaryResult =
     }
 
 
-port passRollToPlotly : SummaryResult -> Cmd msg
+port passRollToPlotly : Int -> Cmd msg
 
 
 port passBatchedRollsToPlotly : ( Inputs, List SummaryResult ) -> Cmd msg
@@ -372,10 +368,10 @@ rollGenerator input =
     generator
 
 
-generateRandomRoll : Inputs -> Cmd Msg
-generateRandomRoll input =
-    rollGenerator input
-        |> Random.generate RollGenerated
+-- generateRandomRoll : Inputs -> Cmd Msg
+-- generateRandomRoll input =
+--     rollGenerator input
+--         |> Random.generate RollGenerated
 
 
 main : Program () Model Msg

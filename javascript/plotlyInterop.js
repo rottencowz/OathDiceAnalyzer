@@ -31,13 +31,13 @@ function createRollDistributionHistogram(message) {
         xbins: { start: 0 },
         xaxis: "x",
         yaxis: "y",
-        selectedpoints: [],
-        selected: {
-            marker: {
-                color: "red",
-                opacity: 0.3
-            }
-        }
+        // selectedpoints: [],
+        // selected: {
+        //     marker: {
+        //         color: "red",
+        //         opacity: 0.3
+        //     }
+        // }
     };
 
     var trace2 = {
@@ -57,13 +57,13 @@ function createRollDistributionHistogram(message) {
         xbins: { start: 0 },
         xaxis: "x",
         yaxis: "y",
-        selectedpoints: [],
-        selected: {
-            marker: {
-                color: "green",
-                opacity: 0.3
-            }
-        }
+        // selectedpoints: [],
+        // selected: {
+        //     marker: {
+        //         color: "green",
+        //         opacity: 0.3
+        //     }
+        // }
     };
 
 
