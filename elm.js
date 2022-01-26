@@ -5227,58 +5227,10 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$element = _Browser_element;
-var $author$project$OathDice$initialModel = function () {
-	var initialInputs = {attackingDice: 5, attackingTroops: 0, defendingDice: 5, defendingTroops: 0};
-	return {backgroundRolls: _List_Nil, index: $elm$core$Maybe$Nothing, input: initialInputs, roll: $elm$core$Maybe$Nothing};
-}();
-var $elm$core$Platform$Cmd$batch = _Platform_batch;
-var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $author$project$OathDice$init = function (_v0) {
-	return _Utils_Tuple2($author$project$OathDice$initialModel, $elm$core$Platform$Cmd$none);
-};
-var $elm$core$Platform$Sub$batch = _Platform_batch;
-var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$OathDice$AnalysisGenerated = function (a) {
 	return {$: 'AnalysisGenerated', a: a};
 };
-var $author$project$OathDice$RollGenerated = function (a) {
-	return {$: 'RollGenerated', a: a};
-};
-var $elm$core$Array$fromListHelp = F3(
-	function (list, nodeList, nodeListSize) {
-		fromListHelp:
-		while (true) {
-			var _v0 = A2($elm$core$Elm$JsArray$initializeFromList, $elm$core$Array$branchFactor, list);
-			var jsArray = _v0.a;
-			var remainingItems = _v0.b;
-			if (_Utils_cmp(
-				$elm$core$Elm$JsArray$length(jsArray),
-				$elm$core$Array$branchFactor) < 0) {
-				return A2(
-					$elm$core$Array$builderToArray,
-					true,
-					{nodeList: nodeList, nodeListSize: nodeListSize, tail: jsArray});
-			} else {
-				var $temp$list = remainingItems,
-					$temp$nodeList = A2(
-					$elm$core$List$cons,
-					$elm$core$Array$Leaf(jsArray),
-					nodeList),
-					$temp$nodeListSize = nodeListSize + 1;
-				list = $temp$list;
-				nodeList = $temp$nodeList;
-				nodeListSize = $temp$nodeListSize;
-				continue fromListHelp;
-			}
-		}
-	});
-var $elm$core$Array$fromList = function (list) {
-	if (!list.b) {
-		return $elm$core$Array$empty;
-	} else {
-		return A3($elm$core$Array$fromListHelp, list, _List_Nil, 0);
-	}
-};
+var $author$project$OathDice$analysisNumber = 10000;
 var $elm$random$Random$Generate = function (a) {
 	return {$: 'Generate', a: a};
 };
@@ -5386,88 +5338,6 @@ var $elm$random$Random$generate = F2(
 			$elm$random$Random$Generate(
 				A2($elm$random$Random$map, tagger, generator)));
 	});
-var $elm$core$Bitwise$and = _Bitwise_and;
-var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
-var $elm$core$Basics$ge = _Utils_ge;
-var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
-var $elm$core$Array$getHelp = F3(
-	function (shift, index, tree) {
-		getHelp:
-		while (true) {
-			var pos = $elm$core$Array$bitMask & (index >>> shift);
-			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
-			if (_v0.$ === 'SubTree') {
-				var subTree = _v0.a;
-				var $temp$shift = shift - $elm$core$Array$shiftStep,
-					$temp$index = index,
-					$temp$tree = subTree;
-				shift = $temp$shift;
-				index = $temp$index;
-				tree = $temp$tree;
-				continue getHelp;
-			} else {
-				var values = _v0.a;
-				return A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, values);
-			}
-		}
-	});
-var $elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
-var $elm$core$Array$tailIndex = function (len) {
-	return (len >>> 5) << 5;
-};
-var $elm$core$Array$get = F2(
-	function (index, _v0) {
-		var len = _v0.a;
-		var startShift = _v0.b;
-		var tree = _v0.c;
-		var tail = _v0.d;
-		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? $elm$core$Maybe$Nothing : ((_Utils_cmp(
-			index,
-			$elm$core$Array$tailIndex(len)) > -1) ? $elm$core$Maybe$Just(
-			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
-			A3($elm$core$Array$getHelp, startShift, index, tree)));
-	});
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
-var $elm$core$Bitwise$xor = _Bitwise_xor;
-var $elm$random$Random$peel = function (_v0) {
-	var state = _v0.a;
-	var word = (state ^ (state >>> ((state >>> 28) + 4))) * 277803737;
-	return ((word >>> 22) ^ word) >>> 0;
-};
-var $elm$random$Random$int = F2(
-	function (a, b) {
-		return $elm$random$Random$Generator(
-			function (seed0) {
-				var _v0 = (_Utils_cmp(a, b) < 0) ? _Utils_Tuple2(a, b) : _Utils_Tuple2(b, a);
-				var lo = _v0.a;
-				var hi = _v0.b;
-				var range = (hi - lo) + 1;
-				if (!((range - 1) & range)) {
-					return _Utils_Tuple2(
-						(((range - 1) & $elm$random$Random$peel(seed0)) >>> 0) + lo,
-						$elm$random$Random$next(seed0));
-				} else {
-					var threshhold = (((-range) >>> 0) % range) >>> 0;
-					var accountForBias = function (seed) {
-						accountForBias:
-						while (true) {
-							var x = $elm$random$Random$peel(seed);
-							var seedN = $elm$random$Random$next(seed);
-							if (_Utils_cmp(x, threshhold) < 0) {
-								var $temp$seed = seedN;
-								seed = $temp$seed;
-								continue accountForBias;
-							} else {
-								return _Utils_Tuple2((x % range) + lo, seedN);
-							}
-						}
-					};
-					return accountForBias(seed0);
-				}
-			});
-	});
 var $elm$random$Random$listHelp = F4(
 	function (revList, n, gen, seed) {
 		listHelp:
@@ -5498,96 +5368,6 @@ var $elm$random$Random$list = F2(
 				return A4($elm$random$Random$listHelp, _List_Nil, n, gen, seed);
 			});
 	});
-var $elm$json$Json$Encode$float = _Json_wrap;
-var $elm$json$Json$Encode$int = _Json_wrap;
-var $elm$json$Json$Encode$list = F2(
-	function (func, entries) {
-		return _Json_wrap(
-			A3(
-				$elm$core$List$foldl,
-				_Json_addEntry(func),
-				_Json_emptyArray(_Utils_Tuple0),
-				entries));
-	});
-var $elm$json$Json$Encode$object = function (pairs) {
-	return _Json_wrap(
-		A3(
-			$elm$core$List$foldl,
-			F2(
-				function (_v0, obj) {
-					var k = _v0.a;
-					var v = _v0.b;
-					return A3(_Json_addField, k, v, obj);
-				}),
-			_Json_emptyObject(_Utils_Tuple0),
-			pairs));
-};
-var $author$project$OathDice$passBatchedRollsToPlotly = _Platform_outgoingPort(
-	'passBatchedRollsToPlotly',
-	function ($) {
-		var a = $.a;
-		var b = $.b;
-		return A2(
-			$elm$json$Json$Encode$list,
-			$elm$core$Basics$identity,
-			_List_fromArray(
-				[
-					function ($) {
-					return $elm$json$Json$Encode$object(
-						_List_fromArray(
-							[
-								_Utils_Tuple2(
-								'attackingDice',
-								$elm$json$Json$Encode$int($.attackingDice)),
-								_Utils_Tuple2(
-								'attackingTroops',
-								$elm$json$Json$Encode$int($.attackingTroops)),
-								_Utils_Tuple2(
-								'defendingDice',
-								$elm$json$Json$Encode$int($.defendingDice)),
-								_Utils_Tuple2(
-								'defendingTroops',
-								$elm$json$Json$Encode$int($.defendingTroops))
-							]));
-				}(a),
-					$elm$json$Json$Encode$list(
-					function ($) {
-						return $elm$json$Json$Encode$object(
-							_List_fromArray(
-								[
-									_Utils_Tuple2(
-									'summarizedDefense',
-									function ($) {
-										var a = $.a;
-										var b = $.b;
-										return A2(
-											$elm$json$Json$Encode$list,
-											$elm$core$Basics$identity,
-											_List_fromArray(
-												[
-													$elm$json$Json$Encode$int(a),
-													$elm$json$Json$Encode$int(b)
-												]));
-									}($.summarizedDefense)),
-									_Utils_Tuple2(
-									'summarizedOffense',
-									function ($) {
-										var a = $.a;
-										var b = $.b;
-										return A2(
-											$elm$json$Json$Encode$list,
-											$elm$core$Basics$identity,
-											_List_fromArray(
-												[
-													$elm$json$Json$Encode$float(a),
-													$elm$json$Json$Encode$int(b)
-												]));
-									}($.summarizedOffense))
-								]));
-					})(b)
-				]));
-	});
-var $author$project$OathDice$passRollToPlotly = _Platform_outgoingPort('passRollToPlotly', $elm$json$Json$Encode$int);
 var $elm$random$Random$map2 = F3(
 	function (func, _v0, _v1) {
 		var genA = _v0.a;
@@ -5609,8 +5389,18 @@ var $author$project$OathDice$Empty = {$: 'Empty'};
 var $author$project$OathDice$Multiply = {$: 'Multiply'};
 var $author$project$OathDice$Shield = {$: 'Shield'};
 var $author$project$OathDice$TwoShields = {$: 'TwoShields'};
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
 var $elm$core$Basics$abs = function (n) {
 	return (n < 0) ? (-n) : n;
+};
+var $elm$core$Bitwise$and = _Bitwise_and;
+var $elm$core$Bitwise$xor = _Bitwise_xor;
+var $elm$random$Random$peel = function (_v0) {
+	var state = _v0.a;
+	var word = (state ^ (state >>> ((state >>> 28) + 4))) * 277803737;
+	return ((word >>> 22) ^ word) >>> 0;
 };
 var $elm$random$Random$float = F2(
 	function (a, b) {
@@ -5715,6 +5505,226 @@ var $author$project$OathDice$rollGenerator = function (input) {
 		defense);
 	return generator;
 };
+var $author$project$OathDice$generateAnalysis = function (model) {
+	return A2(
+		$elm$random$Random$generate,
+		$author$project$OathDice$AnalysisGenerated,
+		A2(
+			$elm$random$Random$list,
+			$author$project$OathDice$analysisNumber,
+			$author$project$OathDice$rollGenerator(model.input)));
+};
+var $author$project$OathDice$initialModel = function () {
+	var initialInputs = {attackingDice: 5, attackingTroops: 0, defendingDice: 5, defendingTroops: 0};
+	return {backgroundRolls: _List_Nil, index: $elm$core$Maybe$Nothing, input: initialInputs, roll: $elm$core$Maybe$Nothing};
+}();
+var $author$project$OathDice$init = function (_v0) {
+	return _Utils_Tuple2(
+		$author$project$OathDice$initialModel,
+		$author$project$OathDice$generateAnalysis($author$project$OathDice$initialModel));
+};
+var $elm$core$Platform$Sub$batch = _Platform_batch;
+var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
+var $author$project$OathDice$RollGenerated = function (a) {
+	return {$: 'RollGenerated', a: a};
+};
+var $elm$core$Array$fromListHelp = F3(
+	function (list, nodeList, nodeListSize) {
+		fromListHelp:
+		while (true) {
+			var _v0 = A2($elm$core$Elm$JsArray$initializeFromList, $elm$core$Array$branchFactor, list);
+			var jsArray = _v0.a;
+			var remainingItems = _v0.b;
+			if (_Utils_cmp(
+				$elm$core$Elm$JsArray$length(jsArray),
+				$elm$core$Array$branchFactor) < 0) {
+				return A2(
+					$elm$core$Array$builderToArray,
+					true,
+					{nodeList: nodeList, nodeListSize: nodeListSize, tail: jsArray});
+			} else {
+				var $temp$list = remainingItems,
+					$temp$nodeList = A2(
+					$elm$core$List$cons,
+					$elm$core$Array$Leaf(jsArray),
+					nodeList),
+					$temp$nodeListSize = nodeListSize + 1;
+				list = $temp$list;
+				nodeList = $temp$nodeList;
+				nodeListSize = $temp$nodeListSize;
+				continue fromListHelp;
+			}
+		}
+	});
+var $elm$core$Array$fromList = function (list) {
+	if (!list.b) {
+		return $elm$core$Array$empty;
+	} else {
+		return A3($elm$core$Array$fromListHelp, list, _List_Nil, 0);
+	}
+};
+var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
+var $elm$core$Basics$ge = _Utils_ge;
+var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
+var $elm$core$Array$getHelp = F3(
+	function (shift, index, tree) {
+		getHelp:
+		while (true) {
+			var pos = $elm$core$Array$bitMask & (index >>> shift);
+			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
+			if (_v0.$ === 'SubTree') {
+				var subTree = _v0.a;
+				var $temp$shift = shift - $elm$core$Array$shiftStep,
+					$temp$index = index,
+					$temp$tree = subTree;
+				shift = $temp$shift;
+				index = $temp$index;
+				tree = $temp$tree;
+				continue getHelp;
+			} else {
+				var values = _v0.a;
+				return A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, values);
+			}
+		}
+	});
+var $elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
+var $elm$core$Array$tailIndex = function (len) {
+	return (len >>> 5) << 5;
+};
+var $elm$core$Array$get = F2(
+	function (index, _v0) {
+		var len = _v0.a;
+		var startShift = _v0.b;
+		var tree = _v0.c;
+		var tail = _v0.d;
+		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? $elm$core$Maybe$Nothing : ((_Utils_cmp(
+			index,
+			$elm$core$Array$tailIndex(len)) > -1) ? $elm$core$Maybe$Just(
+			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
+			A3($elm$core$Array$getHelp, startShift, index, tree)));
+	});
+var $elm$random$Random$int = F2(
+	function (a, b) {
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var _v0 = (_Utils_cmp(a, b) < 0) ? _Utils_Tuple2(a, b) : _Utils_Tuple2(b, a);
+				var lo = _v0.a;
+				var hi = _v0.b;
+				var range = (hi - lo) + 1;
+				if (!((range - 1) & range)) {
+					return _Utils_Tuple2(
+						(((range - 1) & $elm$random$Random$peel(seed0)) >>> 0) + lo,
+						$elm$random$Random$next(seed0));
+				} else {
+					var threshhold = (((-range) >>> 0) % range) >>> 0;
+					var accountForBias = function (seed) {
+						accountForBias:
+						while (true) {
+							var x = $elm$random$Random$peel(seed);
+							var seedN = $elm$random$Random$next(seed);
+							if (_Utils_cmp(x, threshhold) < 0) {
+								var $temp$seed = seedN;
+								seed = $temp$seed;
+								continue accountForBias;
+							} else {
+								return _Utils_Tuple2((x % range) + lo, seedN);
+							}
+						}
+					};
+					return accountForBias(seed0);
+				}
+			});
+	});
+var $elm$json$Json$Encode$float = _Json_wrap;
+var $elm$json$Json$Encode$int = _Json_wrap;
+var $elm$json$Json$Encode$list = F2(
+	function (func, entries) {
+		return _Json_wrap(
+			A3(
+				$elm$core$List$foldl,
+				_Json_addEntry(func),
+				_Json_emptyArray(_Utils_Tuple0),
+				entries));
+	});
+var $elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v0, obj) {
+					var k = _v0.a;
+					var v = _v0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(_Utils_Tuple0),
+			pairs));
+};
+var $author$project$OathDice$passBatchedRollsToPlotly = _Platform_outgoingPort(
+	'passBatchedRollsToPlotly',
+	function ($) {
+		var a = $.a;
+		var b = $.b;
+		return A2(
+			$elm$json$Json$Encode$list,
+			$elm$core$Basics$identity,
+			_List_fromArray(
+				[
+					function ($) {
+					return $elm$json$Json$Encode$object(
+						_List_fromArray(
+							[
+								_Utils_Tuple2(
+								'attackingDice',
+								$elm$json$Json$Encode$int($.attackingDice)),
+								_Utils_Tuple2(
+								'attackingTroops',
+								$elm$json$Json$Encode$int($.attackingTroops)),
+								_Utils_Tuple2(
+								'defendingDice',
+								$elm$json$Json$Encode$int($.defendingDice)),
+								_Utils_Tuple2(
+								'defendingTroops',
+								$elm$json$Json$Encode$int($.defendingTroops))
+							]));
+				}(a),
+					$elm$json$Json$Encode$list(
+					function ($) {
+						return $elm$json$Json$Encode$object(
+							_List_fromArray(
+								[
+									_Utils_Tuple2(
+									'summarizedDefense',
+									function ($) {
+										var a = $.a;
+										var b = $.b;
+										return A2(
+											$elm$json$Json$Encode$list,
+											$elm$core$Basics$identity,
+											_List_fromArray(
+												[
+													$elm$json$Json$Encode$int(a),
+													$elm$json$Json$Encode$int(b)
+												]));
+									}($.summarizedDefense)),
+									_Utils_Tuple2(
+									'summarizedOffense',
+									function ($) {
+										var a = $.a;
+										var b = $.b;
+										return A2(
+											$elm$json$Json$Encode$list,
+											$elm$core$Basics$identity,
+											_List_fromArray(
+												[
+													$elm$json$Json$Encode$float(a),
+													$elm$json$Json$Encode$int(b)
+												]));
+									}($.summarizedOffense))
+								]));
+					})(b)
+				]));
+	});
+var $author$project$OathDice$passRollToPlotly = _Platform_outgoingPort('passRollToPlotly', $elm$json$Json$Encode$int);
 var $author$project$OathDice$summarizeDefenseRoll = function (defense) {
 	return A3(
 		$elm$core$List$foldl,
@@ -5865,14 +5875,14 @@ var $author$project$OathDice$update = F2(
 								model.input,
 								_Utils_Tuple3(action, field, side))
 						}),
-					$elm$core$Platform$Cmd$none);
+					$author$project$OathDice$generateAnalysis(model));
 			case 'Roll':
 				return _Utils_Tuple2(
 					model,
 					A2(
 						$elm$random$Random$generate,
 						$author$project$OathDice$RollGenerated,
-						A2($elm$random$Random$int, 0, 10000 - 1)));
+						A2($elm$random$Random$int, 0, $author$project$OathDice$analysisNumber - 1)));
 			case 'RollGenerated':
 				var index = msg.a;
 				var roll = A2(
@@ -5885,16 +5895,6 @@ var $author$project$OathDice$update = F2(
 				return _Utils_Tuple2(
 					newModel,
 					$author$project$OathDice$passRollToPlotly(index));
-			case 'GenerateAnalysis':
-				return _Utils_Tuple2(
-					model,
-					A2(
-						$elm$random$Random$generate,
-						$author$project$OathDice$AnalysisGenerated,
-						A2(
-							$elm$random$Random$list,
-							10000,
-							$author$project$OathDice$rollGenerator(model.input))));
 			default:
 				var rolls = msg.a;
 				return _Utils_Tuple2(
@@ -5918,7 +5918,6 @@ var $author$project$OathDice$update = F2(
 								rolls))));
 		}
 	});
-var $author$project$OathDice$GenerateAnalysis = {$: 'GenerateAnalysis'};
 var $author$project$OathDice$Roll = {$: 'Roll'};
 var $elm$html$Html$br = _VirtualDom_node('br');
 var $elm$html$Html$button = _VirtualDom_node('button');
@@ -6138,16 +6137,6 @@ var $author$project$OathDice$view = function (model) {
 					])),
 				A2($elm$html$Html$br, _List_Nil, _List_Nil),
 				$author$project$OathDice$viewRollResult(model),
-				A2(
-				$elm$html$Html$button,
-				_List_fromArray(
-					[
-						$elm$html$Html$Events$onClick($author$project$OathDice$GenerateAnalysis)
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text('Generate Analysis')
-					])),
 				A2($elm$html$Html$br, _List_Nil, _List_Nil)
 			]));
 };

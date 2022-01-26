@@ -8,12 +8,15 @@ import Html.Events exposing (..)
 import Random exposing (Generator)
 
 
-init : () -> ( Model, Cmd msg )
+init : () -> ( Model, Cmd Msg )
 init _ =
-    ( initialModel, Cmd.none )
+    ( initialModel, generateAnalysis initialModel )
+
 
 
 -- TODO : get from local storage
+
+
 initialModel : Model
 initialModel =
     let
@@ -59,7 +62,6 @@ type Msg
     = Modify Action Field Side
     | Roll
     | RollGenerated Int
-    | GenerateAnalysis
     | AnalysisGenerated (List RollState)
 
 
@@ -88,7 +90,6 @@ view model =
         , button [ onClick Roll ] [ text "Roll" ]
         , br [] []
         , viewRollResult model
-        , button [ onClick GenerateAnalysis ] [ text "Generate Analysis" ]
         , br [] []
         ]
 
@@ -175,7 +176,7 @@ summarizeDefenseRoll defense =
                 Multiply ->
                     ( shield, multiplies + 1 )
 
-                _ ->
+                Empty ->
                     ( shield, multiplies )
         )
         ( 0, 0 )
@@ -223,19 +224,27 @@ summarizeOffenseResults offense =
         offense
 
 
+countGenereratedRolls : Int
+countGenereratedRolls =
+    10000
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Modify action field side ->
-            ( { model | input = updateInput model.input ( action, field, side ) }, Cmd.none )
+            ( { model | input = updateInput model.input ( action, field, side ) }
+            , generateAnalysis model
+            )
 
         Roll ->
-            ( model, Random.generate RollGenerated (Random.int 0 (10000 - 1) ))
+            ( model, Random.generate RollGenerated (Random.int 0 (countGenereratedRolls - 1)) )
 
         RollGenerated index ->
             let
-                roll = Array.fromList model.backgroundRolls
-                    |> Array.get index
+                roll =
+                    Array.fromList model.backgroundRolls
+                        |> Array.get index
 
                 newModel =
                     { model | roll = roll }
@@ -244,9 +253,6 @@ update msg model =
             , passRollToPlotly
                 index
             )
-
-        GenerateAnalysis ->
-            ( model, Random.generate AnalysisGenerated (Random.list 10000 (rollGenerator model.input)) )
 
         AnalysisGenerated rolls ->
             ( { model | backgroundRolls = rolls }
@@ -261,6 +267,11 @@ update msg model =
                     rolls
                 )
             )
+
+
+generateAnalysis : Model -> Cmd Msg
+generateAnalysis model =
+    Random.generate AnalysisGenerated (Random.list countGenereratedRolls (rollGenerator model.input))
 
 
 type alias SummaryResult =
@@ -366,12 +377,6 @@ rollGenerator input =
             Random.map2 (\a b -> ( input, a, b )) offense defense
     in
     generator
-
-
--- generateRandomRoll : Inputs -> Cmd Msg
--- generateRandomRoll input =
---     rollGenerator input
---         |> Random.generate RollGenerated
 
 
 main : Program () Model Msg
