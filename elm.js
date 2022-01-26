@@ -5230,7 +5230,7 @@ var $elm$browser$Browser$element = _Browser_element;
 var $author$project$OathDice$AnalysisGenerated = function (a) {
 	return {$: 'AnalysisGenerated', a: a};
 };
-var $author$project$OathDice$analysisNumber = 10000;
+var $author$project$OathDice$countGenereratedRolls = 10000;
 var $elm$random$Random$Generate = function (a) {
 	return {$: 'Generate', a: a};
 };
@@ -5468,12 +5468,12 @@ var $author$project$OathDice$rollDefenseDice = function (count) {
 		count,
 		A2(
 			$elm$random$Random$weighted,
-			_Utils_Tuple2(10, $author$project$OathDice$Empty),
+			_Utils_Tuple2(2, $author$project$OathDice$Empty),
 			_List_fromArray(
 				[
-					_Utils_Tuple2(10, $author$project$OathDice$Shield),
-					_Utils_Tuple2(10, $author$project$OathDice$TwoShields),
-					_Utils_Tuple2(10, $author$project$OathDice$Multiply)
+					_Utils_Tuple2(2, $author$project$OathDice$Shield),
+					_Utils_Tuple2(1, $author$project$OathDice$TwoShields),
+					_Utils_Tuple2(1, $author$project$OathDice$Multiply)
 				])));
 };
 var $author$project$OathDice$Hollow = {$: 'Hollow'};
@@ -5485,11 +5485,11 @@ var $author$project$OathDice$rollOffenseDice = function (count) {
 		count,
 		A2(
 			$elm$random$Random$weighted,
-			_Utils_Tuple2(10, $author$project$OathDice$Skull),
+			_Utils_Tuple2(1, $author$project$OathDice$Skull),
 			_List_fromArray(
 				[
-					_Utils_Tuple2(10, $author$project$OathDice$Single),
-					_Utils_Tuple2(10, $author$project$OathDice$Hollow)
+					_Utils_Tuple2(2, $author$project$OathDice$Single),
+					_Utils_Tuple2(3, $author$project$OathDice$Hollow)
 				])));
 };
 var $author$project$OathDice$rollGenerator = function (input) {
@@ -5511,7 +5511,7 @@ var $author$project$OathDice$generateAnalysis = function (model) {
 		$author$project$OathDice$AnalysisGenerated,
 		A2(
 			$elm$random$Random$list,
-			$author$project$OathDice$analysisNumber,
+			$author$project$OathDice$countGenereratedRolls,
 			$author$project$OathDice$rollGenerator(model.input)));
 };
 var $author$project$OathDice$initialModel = function () {
@@ -5882,7 +5882,7 @@ var $author$project$OathDice$update = F2(
 					A2(
 						$elm$random$Random$generate,
 						$author$project$OathDice$RollGenerated,
-						A2($elm$random$Random$int, 0, $author$project$OathDice$analysisNumber - 1)));
+						A2($elm$random$Random$int, 0, $author$project$OathDice$countGenereratedRolls - 1)));
 			case 'RollGenerated':
 				var index = msg.a;
 				var roll = A2(

@@ -345,9 +345,9 @@ rollOffenseDice : Int -> Random.Generator (List OffenseSides)
 rollOffenseDice count =
     Random.list count
         (Random.weighted
-            ( 10, Skull )
-            [ ( 10, Single )
-            , ( 10, Hollow )
+            ( 1, Skull )
+            [ ( 2, Single )
+            , ( 3, Hollow )
             ]
         )
 
@@ -356,10 +356,10 @@ rollDefenseDice : Int -> Random.Generator (List DefenseSides)
 rollDefenseDice count =
     Random.list count
         (Random.weighted
-            ( 10, Empty )
-            [ ( 10, Shield )
-            , ( 10, TwoShields )
-            , ( 10, Multiply )
+            ( 2, Empty )
+            [ ( 2, Shield )
+            , ( 1, TwoShields )
+            , ( 1, Multiply )
             ]
         )
 
