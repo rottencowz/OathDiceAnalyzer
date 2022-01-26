@@ -5866,16 +5866,17 @@ var $author$project$OathDice$update = F2(
 				var action = msg.a;
 				var field = msg.b;
 				var side = msg.c;
+				var updatedModel = _Utils_update(
+					model,
+					{
+						input: A2(
+							$author$project$OathDice$updateInput,
+							model.input,
+							_Utils_Tuple3(action, field, side))
+					});
 				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							input: A2(
-								$author$project$OathDice$updateInput,
-								model.input,
-								_Utils_Tuple3(action, field, side))
-						}),
-					$author$project$OathDice$generateAnalysis(model));
+					updatedModel,
+					$author$project$OathDice$generateAnalysis(updatedModel));
 			case 'Roll':
 				return _Utils_Tuple2(
 					model,

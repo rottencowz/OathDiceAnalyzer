@@ -233,8 +233,12 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Modify action field side ->
-            ( { model | input = updateInput model.input ( action, field, side ) }
-            , generateAnalysis model
+            let
+                updatedModel =
+                    { model | input = updateInput model.input ( action, field, side ) }
+            in
+            ( updatedModel
+            , generateAnalysis updatedModel
             )
 
         Roll ->
