@@ -24,14 +24,12 @@
     });
 
     app.ports.passBatchedRollsToPlotly.subscribe((message) =>
-        createPlotlyPlotsFromRoll(message)
+        createPlotlyPlotsFromRoll(message, undefined)
     );
 
-    app.ports.passRollToPlotly.subscribe(function (message) {
-        console.log(message);
-        // todo
-        // Individual Roll has been sent to us.
-    });
+    app.ports.passRollToPlotly.subscribe((message) =>
+        reprojectWithSelected(message)
+    );
 </script>
 
 </html>

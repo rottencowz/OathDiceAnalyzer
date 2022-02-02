@@ -1,12 +1,26 @@
+
+// gross - keep track of this in elm-land
+var lastRunMessage = undefined;
+
 /**
  * 
  */
-function createPlotlyPlotsFromRoll(message) {
-    createRollDistributionHistogram(message);
-    createExpectedLossHistogram(message);
+function createPlotlyPlotsFromRoll(message, selected = undefined) {
+    if (!message) {
+        return;
+    }
+
+    lastRunMessage = message;
+    createRollDistributionHistogram(message, selected);
+    createExpectedLossHistogram(message, selected);
 }
 
-function createRollDistributionHistogram(message) {
+
+function reprojectWithSelected(message) {
+    createPlotlyPlotsFromRoll(lastRunMessage, message);
+}
+
+function createRollDistributionHistogram(message, selected) {
     var xOffense = [];
     var xDefense = [];
     message[1].forEach((elem, i) => {
@@ -14,7 +28,7 @@ function createRollDistributionHistogram(message) {
         xDefense[i] = elem.summarizedDefense[0] * Math.max(1, elem.summarizedDefense[1]);
     });
 
-    var trace1 = {
+    var offenseHistogram = {
         x: xOffense,
         name: 'Offense',
         autobinx: true,
@@ -30,17 +44,23 @@ function createRollDistributionHistogram(message) {
         histnorm: 'percent',
         xbins: { start: 0 },
         xaxis: "x",
-        yaxis: "y",
-        // selectedpoints: [],
-        // selected: {
-        //     marker: {
-        //         color: "red",
-        //         opacity: 0.3
-        //     }
-        // }
+        yaxis: "y"
     };
 
-    var trace2 = {
+    if (selected) {
+        offenseHistogram = {
+            ...offenseHistogram,
+            selectedpoints: [selected],
+            selected: {
+                marker: {
+                    color: "red",
+                    opacity: 0.8
+                }
+            }
+        }
+    }
+
+    var defenseHistogram = {
         x: xDefense,
         autobinx: true,
         marker: {
@@ -56,18 +76,24 @@ function createRollDistributionHistogram(message) {
         histnorm: 'percent',
         xbins: { start: 0 },
         xaxis: "x",
-        yaxis: "y",
-        // selectedpoints: [],
-        // selected: {
-        //     marker: {
-        //         color: "green",
-        //         opacity: 0.3
-        //     }
-        // }
+        yaxis: "y"
     };
 
+    if (selected) {
+        defenseHistogram = {
+            ...defenseHistogram,
+            selectedpoints: [selected],
+            selected: {
+                marker: {
+                    color: "green",
+                    opacity: 0.8
+                }
+            }
+        }
+    }
 
-    var trace3 = {
+
+    var offenseBox = {
         name: "O",
         x: xOffense,
         marker: {
@@ -84,7 +110,7 @@ function createRollDistributionHistogram(message) {
         yaxis: 'y2',
     };
 
-    var trace4 = {
+    var defenseBox = {
         name: "D",
         x: xDefense,
         marker: {
@@ -100,7 +126,7 @@ function createRollDistributionHistogram(message) {
         xaxis: 'x',
         yaxis: 'y2',
     };
-    var data = [trace1, trace2, trace3, trace4];
+    var data = [offenseHistogram, defenseHistogram, offenseBox, defenseBox];
 
     var layout = {
         bargap: 0.05,
@@ -121,10 +147,12 @@ function createRollDistributionHistogram(message) {
  * If guaranteed loss, expected loss of troops is half remaining force
  * @param {*} message 
  */
-function createExpectedLossHistogram(message) {
+function createExpectedLossHistogram(message, selected) {
     var wins = [];
     var losses = [];
     var inputs = message[0];
+    var boxForIndex = [];
+    var selectedIndex = undefined;
     message[1].forEach((elem, i) => {
         var offensiveScore = Math.floor(elem.summarizedOffense[0]);
         var defensiveScore = elem.summarizedDefense[0] * Math.max(1, elem.summarizedDefense[1]) + inputs.defendingTroops;
@@ -134,14 +162,27 @@ function createExpectedLossHistogram(message) {
 
         if (offensiveScore > defensiveScore) {
             wins.push(immediateRollLosses);
+            boxForIndex.push(true);
+            if (i === selected) {
+                selectedIndex = wins.length - 1;
+            }
         } else if (offensiveScore + availableTroopsPostRoll > defensiveScore) {
             var lossesToWin = (defensiveScore - offensiveScore) + 1;
             wins.push(immediateRollLosses + lossesToWin);
+            boxForIndex.push(true);
+            if (i === selected) {
+                selectedIndex = wins.length - 1;
+            }
         } else {
+            // TODO: bug
+            // handle upper bound of losses here. If someone rolls a dice with 0 troops, can't lose more than 0 troops.
             losses.push(immediateRollLosses + Math.floor(availableTroopsPostRoll / 2));
+            boxForIndex.push(false);
+            if (i === selected) {
+                selectedIndex = losses.length - 1;
+            }
         }
     });
-
     var winnableTrace = {
         x: wins,
         name: 'Victory',
@@ -149,7 +190,7 @@ function createExpectedLossHistogram(message) {
         marker: {
             color: "orange",
             line: {
-                color: "rgba(255, 100, 102, 1)",
+                color: "red",
                 width: 1
             }
         },
@@ -166,7 +207,7 @@ function createExpectedLossHistogram(message) {
         marker: {
             color: "blue",
             line: {
-                color: "rgba(100, 200, 102, 1)",
+                color: "purple",
                 width: 1
             }
         },
@@ -177,6 +218,41 @@ function createExpectedLossHistogram(message) {
         xaxis: "x",
         yaxis: "y"
     };
+
+    if (selected) {
+        if (boxForIndex[selected] === true) {
+            winnableTrace = {
+                ...winnableTrace,
+                selectedpoints: [selectedIndex],
+                selected: {
+                    marker: {
+                        color: "orange",
+                        opacity: 0.8
+                    }
+                }
+            };
+            guaranteedLossTrace = {
+                ...guaranteedLossTrace,
+                opacity: 0.2
+            }
+        } else {
+            guaranteedLossTrace = {
+                ...guaranteedLossTrace,
+                selectedpoints: [selectedIndex],
+                selected: {
+                    marker: {
+                        color: "blue",
+                        opacity: 0.8
+                    }
+                }
+            };
+            winnableTrace = {
+                ...winnableTrace,
+                opacity: 0.2
+            }
+        }
+    }
+
     var layout2 = {
         bargap: 0.05,
         bargroupgap: 0.2,
@@ -185,5 +261,6 @@ function createExpectedLossHistogram(message) {
         xaxis: { title: "Losses" },
         yaxis: { title: "Counts" },
     };
+
     Plotly.newPlot('plotly-expectedLosses', [winnableTrace, guaranteedLossTrace], layout2, { staticPlot: true });
 }
