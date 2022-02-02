@@ -148,11 +148,14 @@ function createRollDistributionHistogram(message, selected) {
  * @param {*} message 
  */
 function createExpectedLossHistogram(message, selected) {
+    var inputs = message[0];
+
     var wins = [];
     var losses = [];
-    var inputs = message[0];
+
     var boxForIndex = [];
     var selectedIndex = undefined;
+
     message[1].forEach((elem, i) => {
         var offensiveScore = Math.floor(elem.summarizedOffense[0]);
         var defensiveScore = elem.summarizedDefense[0] * Math.max(1, elem.summarizedDefense[1]) + inputs.defendingTroops;
@@ -161,28 +164,37 @@ function createExpectedLossHistogram(message, selected) {
         var availableTroopsPostRoll = Math.max(0, inputs.attackingTroops - immediateRollLosses);
 
         if (offensiveScore > defensiveScore) {
-            wins.push(immediateRollLosses);
+            // We've immediately won from dice alone. Only losses can come from skulls, and are capped by the initial troop count.
+            var maxLosses = Math.min(immediateRollLosses, inputs.attackingTroops);
+            wins.push(maxLosses);
+
             boxForIndex.push(true);
             if (i === selected) {
                 selectedIndex = wins.length - 1;
             }
         } else if (offensiveScore + availableTroopsPostRoll > defensiveScore) {
+            // Offensive roll is weaker than defensive roll, but we can remaining sacrifice troops (if any) to increase our roll.
             var lossesToWin = (defensiveScore - offensiveScore) + 1;
             wins.push(immediateRollLosses + lossesToWin);
+
             boxForIndex.push(true);
             if (i === selected) {
                 selectedIndex = wins.length - 1;
             }
         } else {
-            // TODO: bug
-            // handle upper bound of losses here. If someone rolls a dice with 0 troops, can't lose more than 0 troops.
-            losses.push(immediateRollLosses + Math.floor(availableTroopsPostRoll / 2));
+            // There is no way Offense can win.
+            // Losses include the skulls, then half (rounded-down) of 
+
+            var maxLosses = Math.min(inputs.attackingTroops, immediateRollLosses + immediateRollLosses + Math.floor(availableTroopsPostRoll / 2));
+            losses.push(maxLosses);
+
             boxForIndex.push(false);
             if (i === selected) {
                 selectedIndex = losses.length - 1;
             }
         }
     });
+
     var winnableTrace = {
         x: wins,
         name: 'Victory',
