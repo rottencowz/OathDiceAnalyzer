@@ -4,7 +4,7 @@
   "description": "",
   "main": "elm.js",
   "scripts": {
-    "build": "elm make .\\src\\OathDice.elm --output elm.js",
+    "build": "elm make ./src/OathDice.elm --output elm.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
