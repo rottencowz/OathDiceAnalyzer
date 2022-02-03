@@ -1,0 +1,24 @@
+{
+  "name": "OathDice",
+  "version": "1.0.0",
+  "description": "",
+  "main": "elm.js",
+  "scripts": {
+    "build": "elm make ./src/OathDice.elm --output elm.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rottencowz/OathDiceAnalyzer.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rottencowz/OathDiceAnalyzer/issues"
+  },
+  "homepage": "https://github.com/rottencowz/OathDiceAnalyzer#readme",
+  "dependencies": {
+    "elm": "^0.19.1-5"
+  }
+}
