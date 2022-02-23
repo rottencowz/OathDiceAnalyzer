@@ -31,8 +31,13 @@
 </body>
 
 <script>
+    var storedState = localStorage.getItem('post-app-save');
+    var startingState = storedState ? JSON.parse(storedState) : null;
+    console.log("Retrieved state: ", startingState);
+
     var app = Elm.OathDice.init({
-        node: document.getElementById('app-wrapper')
+        node: document.getElementById('app-wrapper'),
+        flags: startingState
     });
 
     app.ports.passBatchedRollsToPlotly.subscribe((message) =>
@@ -42,6 +47,13 @@
     app.ports.passRollToPlotly.subscribe((message) =>
         reprojectWithSelected(message)
     );
+
+    app.ports.storeConfiguration.subscribe((configuration) => {
+        // Save the last-known-configuration onto local storage.
+        var config = JSON.stringify(configuration);
+        localStorage.setItem('post-app-save', config);
+        console.log("Saving state: ", config);
+    });
 </script>
 
 </html>

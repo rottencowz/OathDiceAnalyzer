@@ -5,26 +5,38 @@ import Browser exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Json.Decode as Decode exposing (Decoder, Error(..), field, int, map4)
+import Json.Encode as Encode exposing (Value, list)
 import Random exposing (Generator)
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( initialModel, generateAnalysis initialModel )
+init : Maybe String -> ( Model, Cmd Msg )
+init flags =
+    case flags of
+        Just storedInputsJSON ->
+            case Decode.decodeString decoderInputs storedInputsJSON of
+                Ok model ->
+                    let
+                        modelWithStoredInputs =
+                            { defaultModel | input = model }
+                    in
+                    ( modelWithStoredInputs, generateAnalysis modelWithStoredInputs )
+
+                Err _ ->
+                    ( defaultModel, generateAnalysis defaultModel )
+
+        _ ->
+            ( defaultModel, generateAnalysis defaultModel )
 
 
-
--- TODO : get from local storage
-
-
-initialModel : Model
-initialModel =
+defaultModel : Model
+defaultModel =
     let
         initialInputs =
             { attackingDice = 5
-            , attackingTroops = 0
+            , attackingTroops = 5
             , defendingDice = 5
-            , defendingTroops = 0
+            , defendingTroops = 5
             }
     in
     { input = initialInputs
@@ -56,6 +68,25 @@ type alias Inputs =
     , defendingDice : Int
     , defendingTroops : Int
     }
+
+
+decoderInputs : Decoder Inputs
+decoderInputs =
+    map4 Inputs
+        (field "attackingDice" int)
+        (field "attackingTroops" int)
+        (field "defendingDice" int)
+        (field "defendingTroops" int)
+
+
+encoderInputs : Inputs -> Encode.Value
+encoderInputs inputs =
+    Encode.object
+        [ ( "attackingDice", Encode.int inputs.attackingDice )
+        , ( "attackingTroops", Encode.int inputs.attackingTroops )
+        , ( "defendingDice", Encode.int inputs.defendingDice )
+        , ( "defendingTroops", Encode.int inputs.defendingTroops )
+        ]
 
 
 type Msg
@@ -238,7 +269,7 @@ update msg model =
                     { model | input = updateInput model.input ( action, field, side ) }
             in
             ( updatedModel
-            , generateAnalysis updatedModel
+            , Cmd.batch [ generateAnalysis updatedModel, saveConfiguration updatedModel.input ]
             )
 
         Roll ->
@@ -288,6 +319,18 @@ port passRollToPlotly : Int -> Cmd msg
 
 
 port passBatchedRollsToPlotly : ( Inputs, List SummaryResult ) -> Cmd msg
+
+
+{-| Expects a JSON-encoded String.
+-}
+port storeConfiguration : String -> Cmd msg
+
+
+saveConfiguration : Inputs -> Cmd msg
+saveConfiguration inputs =
+    encoderInputs inputs
+        |> Encode.encode 0
+        |> storeConfiguration
 
 
 updateInput : Inputs -> ( Action, Field, Side ) -> Inputs
@@ -383,7 +426,7 @@ rollGenerator input =
     generator
 
 
-main : Program () Model Msg
+main : Program (Maybe String) Model Msg
 main =
     Browser.element
         { init = init
