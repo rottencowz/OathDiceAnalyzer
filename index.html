@@ -11,7 +11,7 @@
 
     <!-- Local Files -->
     <script src="elm.js"></script>
-    <script src="javascript/plotlyInterop.js"></script>
+    <script src="src/javascript/plotlyInterop.js"></script>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,10 +19,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Sorts+Mill+Goudy&display=swap" rel="stylesheet">
 
     <!-- Styles -->
-    <link rel='stylesheet' href="./style.css">
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.6/css/bootstrap.css">
-
+    <link rel='stylesheet' href="./style.css">
 </head>
 
 <body>
@@ -32,8 +31,13 @@
 </body>
 
 <script>
+    var storedState = localStorage.getItem('post-app-save');
+    var startingState = storedState ? JSON.parse(storedState) : null;
+    console.log("Retrieved state: ", startingState);
+
     var app = Elm.OathDice.init({
-        node: document.getElementById('app-wrapper')
+        node: document.getElementById('app-wrapper'),
+        flags: startingState
     });
 
     app.ports.passBatchedRollsToPlotly.subscribe((message) =>
@@ -43,6 +47,13 @@
     app.ports.passRollToPlotly.subscribe((message) =>
         reprojectWithSelected(message)
     );
+
+    app.ports.storeConfiguration.subscribe((configuration) => {
+        // Save the last-known-configuration onto local storage.
+        var config = JSON.stringify(configuration);
+        localStorage.setItem('post-app-save', config);
+        console.log("Saving state: ", config);
+    });
 </script>
 
 </html>

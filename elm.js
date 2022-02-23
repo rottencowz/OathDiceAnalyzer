@@ -4438,6 +4438,10 @@ function _Time_getZoneName()
 		callback(_Scheduler_succeed(name));
 	});
 }
+var $elm$core$Maybe$Just = function (a) {
+	return {$: 'Just', a: a};
+};
+var $elm$core$Maybe$Nothing = {$: 'Nothing'};
 var $elm$core$Basics$EQ = {$: 'EQ'};
 var $elm$core$Basics$GT = {$: 'GT'};
 var $elm$core$Basics$LT = {$: 'LT'};
@@ -4541,10 +4545,6 @@ var $elm$json$Json$Decode$OneOf = function (a) {
 };
 var $elm$core$Basics$False = {$: 'False'};
 var $elm$core$Basics$add = _Basics_add;
-var $elm$core$Maybe$Just = function (a) {
-	return {$: 'Just', a: a};
-};
-var $elm$core$Maybe$Nothing = {$: 'Nothing'};
 var $elm$core$String$all = _String_all;
 var $elm$core$Basics$and = _Basics_and;
 var $elm$core$Basics$append = _Utils_append;
@@ -5227,6 +5227,25 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$element = _Browser_element;
+var $elm$json$Json$Decode$decodeString = _Json_runOnString;
+var $author$project$OathDice$Inputs = F4(
+	function (attackingDice, attackingTroops, defendingDice, defendingTroops) {
+		return {attackingDice: attackingDice, attackingTroops: attackingTroops, defendingDice: defendingDice, defendingTroops: defendingTroops};
+	});
+var $elm$json$Json$Decode$field = _Json_decodeField;
+var $elm$json$Json$Decode$int = _Json_decodeInt;
+var $elm$json$Json$Decode$map4 = _Json_map4;
+var $author$project$OathDice$decoderInputs = A5(
+	$elm$json$Json$Decode$map4,
+	$author$project$OathDice$Inputs,
+	A2($elm$json$Json$Decode$field, 'attackingDice', $elm$json$Json$Decode$int),
+	A2($elm$json$Json$Decode$field, 'attackingTroops', $elm$json$Json$Decode$int),
+	A2($elm$json$Json$Decode$field, 'defendingDice', $elm$json$Json$Decode$int),
+	A2($elm$json$Json$Decode$field, 'defendingTroops', $elm$json$Json$Decode$int));
+var $author$project$OathDice$defaultModel = function () {
+	var initialInputs = {attackingDice: 5, attackingTroops: 5, defendingDice: 5, defendingTroops: 5};
+	return {backgroundRolls: _List_Nil, index: $elm$core$Maybe$Nothing, input: initialInputs, roll: $elm$core$Maybe$Nothing};
+}();
 var $author$project$OathDice$AnalysisGenerated = function (a) {
 	return {$: 'AnalysisGenerated', a: a};
 };
@@ -5514,20 +5533,38 @@ var $author$project$OathDice$generateAnalysis = function (model) {
 			$author$project$OathDice$countGenereratedRolls,
 			$author$project$OathDice$rollGenerator(model.input)));
 };
-var $author$project$OathDice$initialModel = function () {
-	var initialInputs = {attackingDice: 5, attackingTroops: 0, defendingDice: 5, defendingTroops: 0};
-	return {backgroundRolls: _List_Nil, index: $elm$core$Maybe$Nothing, input: initialInputs, roll: $elm$core$Maybe$Nothing};
-}();
-var $author$project$OathDice$init = function (_v0) {
-	return _Utils_Tuple2(
-		$author$project$OathDice$initialModel,
-		$author$project$OathDice$generateAnalysis($author$project$OathDice$initialModel));
+var $author$project$OathDice$init = function (flags) {
+	if (flags.$ === 'Just') {
+		var storedInputsJSON = flags.a;
+		var _v1 = A2($elm$json$Json$Decode$decodeString, $author$project$OathDice$decoderInputs, storedInputsJSON);
+		if (_v1.$ === 'Ok') {
+			var model = _v1.a;
+			var modelWithStoredInputs = _Utils_update(
+				$author$project$OathDice$defaultModel,
+				{input: model});
+			return _Utils_Tuple2(
+				modelWithStoredInputs,
+				$author$project$OathDice$generateAnalysis(modelWithStoredInputs));
+		} else {
+			return _Utils_Tuple2(
+				$author$project$OathDice$defaultModel,
+				$author$project$OathDice$generateAnalysis($author$project$OathDice$defaultModel));
+		}
+	} else {
+		return _Utils_Tuple2(
+			$author$project$OathDice$defaultModel,
+			$author$project$OathDice$generateAnalysis($author$project$OathDice$defaultModel));
+	}
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
+var $elm$json$Json$Decode$null = _Json_decodeNull;
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
+var $elm$json$Json$Decode$string = _Json_decodeString;
 var $author$project$OathDice$RollGenerated = function (a) {
 	return {$: 'RollGenerated', a: a};
 };
+var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Array$fromListHelp = F3(
 	function (list, nodeList, nodeListSize) {
 		fromListHelp:
@@ -5725,6 +5762,33 @@ var $author$project$OathDice$passBatchedRollsToPlotly = _Platform_outgoingPort(
 				]));
 	});
 var $author$project$OathDice$passRollToPlotly = _Platform_outgoingPort('passRollToPlotly', $elm$json$Json$Encode$int);
+var $author$project$OathDice$encoderInputs = function (inputs) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'attackingDice',
+				$elm$json$Json$Encode$int(inputs.attackingDice)),
+				_Utils_Tuple2(
+				'attackingTroops',
+				$elm$json$Json$Encode$int(inputs.attackingTroops)),
+				_Utils_Tuple2(
+				'defendingDice',
+				$elm$json$Json$Encode$int(inputs.defendingDice)),
+				_Utils_Tuple2(
+				'defendingTroops',
+				$elm$json$Json$Encode$int(inputs.defendingTroops))
+			]));
+};
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $author$project$OathDice$storeConfiguration = _Platform_outgoingPort('storeConfiguration', $elm$json$Json$Encode$string);
+var $author$project$OathDice$saveConfiguration = function (inputs) {
+	return $author$project$OathDice$storeConfiguration(
+		A2(
+			$elm$json$Json$Encode$encode,
+			0,
+			$author$project$OathDice$encoderInputs(inputs)));
+};
 var $author$project$OathDice$summarizeDefenseRoll = function (defense) {
 	return A3(
 		$elm$core$List$foldl,
@@ -5876,7 +5940,12 @@ var $author$project$OathDice$update = F2(
 					});
 				return _Utils_Tuple2(
 					updatedModel,
-					$author$project$OathDice$generateAnalysis(updatedModel));
+					$elm$core$Platform$Cmd$batch(
+						_List_fromArray(
+							[
+								$author$project$OathDice$generateAnalysis(updatedModel),
+								$author$project$OathDice$saveConfiguration(updatedModel.input)
+							])));
 			case 'Roll':
 				return _Utils_Tuple2(
 					model,
@@ -5947,7 +6016,6 @@ var $author$project$OathDice$Defense = {$: 'Defense'};
 var $author$project$OathDice$Dice = {$: 'Dice'};
 var $author$project$OathDice$Offense = {$: 'Offense'};
 var $author$project$OathDice$Troops = {$: 'Troops'};
-var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
 		return A2(
@@ -6151,4 +6219,9 @@ var $author$project$OathDice$main = $elm$browser$Browser$element(
 		view: $author$project$OathDice$view
 	});
 _Platform_export({'OathDice':{'init':$author$project$OathDice$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))(0)}});}(this));
+	$elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				$elm$json$Json$Decode$null($elm$core$Maybe$Nothing),
+				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, $elm$json$Json$Decode$string)
+			])))(0)}});}(this));
